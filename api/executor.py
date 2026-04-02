@@ -53,6 +53,7 @@ def _should_review(classifier: ClassifierOutput) -> bool:
 async def execute(
     prompt: str,
     classifier: ClassifierOutput,
+    history: list = None,
 ) -> dict:
     """
     Run the primary skill agent, optionally run a reviewer.
@@ -64,12 +65,21 @@ async def execute(
     log.info("EXECUTING: skill=%s (%s) on model=%s",
              classifier.skill, skill["name"], classifier.model)
 
-    # Inject classifier context so the skill knows what it's dealing with
+    # Build context with conversation history
+    history_text = ""
+    if history:
+        history_text = "## Previous conversation:\n"
+        for msg in history[-6:]:  # last 3 exchanges max to keep costs down
+            role = "User" if msg.role == "user" else "Assistant"
+            history_text += f"{role}: {msg.content[:500]}\n\n"
+        history_text += "---\n\n"
+
     enriched = (
         f"[Context: industry={classifier.industry}, "
         f"task={classifier.task_type}, "
         f"complexity={classifier.complexity}, "
         f"depth={classifier.depth}]\n\n"
+        f"{history_text}"
         f"{prompt}"
     )
 

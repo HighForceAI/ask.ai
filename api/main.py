@@ -106,7 +106,7 @@ async def ask(
     log.info("NEW REQUEST: %s", request.prompt[:100] + ("..." if len(request.prompt) > 100 else ""))
 
     classifier = await classify(request.prompt)
-    result = await execute(prompt=request.prompt, classifier=classifier)
+    result = await execute(prompt=request.prompt, classifier=classifier, history=request.history)
 
     elapsed = time.time() - start
     log.info("REQUEST COMPLETE in %.1fs | skill=%s model=%s cost=$%.6f reviewed=%s",
@@ -141,7 +141,7 @@ async def ask_stream(
         skill = REGISTRY[classifier.skill]
         yield f"data: {json.dumps({'type': 'skill', 'data': {'name': skill['name'], 'key': classifier.skill}})}\n\n"
 
-        result = await execute(prompt=request.prompt, classifier=classifier)
+        result = await execute(prompt=request.prompt, classifier=classifier, history=request.history)
 
         answer = result["answer"]
         chunk_size = 12

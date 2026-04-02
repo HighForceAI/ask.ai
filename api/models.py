@@ -2,9 +2,15 @@ from pydantic import BaseModel
 from typing import Optional, Literal
 
 
+class ChatMessage(BaseModel):
+    role: str   # "user" or "assistant"
+    content: str
+
+
 class AskRequest(BaseModel):
     prompt: str
     api_key: Optional[str] = None
+    history: list[ChatMessage] = []  # previous messages for context
 
 
 class ClassifierOutput(BaseModel):
